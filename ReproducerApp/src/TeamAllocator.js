@@ -10,7 +10,17 @@ import {
   TextInput,
   Modal,
   FlatList,
+  Button,
 } from 'react-native';
+
+let memoryLeakArray = [];
+export function allocateMemory(megabytes) {
+  const bytes = megabytes * 1024 * 1024;
+  // Each number in JS is 8 bytes, so calculate how many numbers to allocate
+  const numElements = Math.floor(bytes / 8);
+  const arr = new Array(numElements).fill(Math.random());
+  memoryLeakArray.push(arr);
+}
 
 const TeamAllocator = ({ navigation }) => {
   const initialPlayers = [
@@ -70,77 +80,7 @@ const TeamAllocator = ({ navigation }) => {
     }
   };
 
-  const PlayerList = ({ players, title, teamId, containerStyle = {} }) => (
-    <View style={[styles.teamContainer, containerStyle]}>
-      <View style={styles.teamTitleContainer}>
-        <Text style={styles.teamTitle}>{title} ({players.length})</Text>
-        {teamId === 'available' && (
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Text style={styles.addPlayerButton}>+</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      {teamId === 'available' ? (
-        <FlatList
-          data={players}
-          renderItem={({ item }) => (
-            <View style={styles.playerCard}>
-              <Text style={styles.playerName}>{item}</Text>
-              <View style={styles.buttonContainer}>
-                <TouchableOpacity
-                  style={[styles.button, styles.teamAButton]}
-                  onPress={() => movePlayer(item, teamId, 'A')}
-                >
-                  <Text style={styles.buttonText}>A</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.teamBButton]}
-                  onPress={() => movePlayer(item, teamId, 'B')}
-                >
-                  <Text style={styles.buttonText}>B</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-          keyExtractor={(item) => item}
-          numColumns={2}
-          columnWrapperStyle={styles.columnWrapper}
-        />
-      ) : (
-        players.map((player) => (
-          <View key={player} style={styles.playerCard}>
-            <Text style={styles.playerName}>{player}</Text>
-            <View style={styles.buttonContainer}>
-              {teamId !== 'A' && (
-                <TouchableOpacity
-                  style={[styles.button, styles.teamAButton]}
-                  onPress={() => movePlayer(player, teamId, 'A')}
-                >
-                  <Text style={styles.buttonText}>A</Text>
-                </TouchableOpacity>
-              )}
-              {teamId !== 'B' && (
-                <TouchableOpacity
-                  style={[styles.button, styles.teamBButton]}
-                  onPress={() => movePlayer(player, teamId, 'B')}
-                >
-                  <Text style={styles.buttonText}>B</Text>
-                </TouchableOpacity>
-              )}
-              {teamId !== 'available' && (
-                <TouchableOpacity
-                  style={[styles.button, styles.availableButton]}
-                  onPress={() => movePlayer(player, teamId, 'available')}
-                >
-                  <Text style={styles.buttonText}>×</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        ))
-      )}
-    </View>
-  );
+ 
 
   return (
     <SafeAreaView style={styles.container}> 
@@ -151,26 +91,14 @@ const TeamAllocator = ({ navigation }) => {
       <ScrollView style={styles.playersList}>
         <View style={[styles.teamsRow]}>
           <View style={styles.teamHalf}>
-            <PlayerList
-              players={teamA}
-              title="Team A"
-              teamId="A"
-            />
+           
           </View>
           <View style={styles.teamHalf}>
-            <PlayerList
-              players={teamB}
-              title="Team B"
-              teamId="B"
-            />
+          
           </View>
         </View>
         <View style={styles.availableRow}>
-          <PlayerList
-            players={availablePlayers}
-            title="Available Players"
-            teamId="available"
-          />
+         
         </View>
       </ScrollView>
       <Modal
@@ -197,6 +125,10 @@ const TeamAllocator = ({ navigation }) => {
           </View>
         </View>
       </Modal>
+      <Button
+        title="Allocate 20MB"
+        onPress={() => allocateMemory(20)}
+      />
     </SafeAreaView>
   );
 };
